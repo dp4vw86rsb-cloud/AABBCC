@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ICTWEB514 Dynamic Web Pages</title>
+<style>
+:root{--ink:#17332f;--bar:#163a3a;--bg:#eef4f1;--card:#fff;--line:#d3e1dc;--accent:#2a6b60;--soft:#d6ebdc;--err:#a33;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e3efea;--bar:#0e2626;--bg:#13201e;--card:#1b2c29;--line:#2f4743;--accent:#7cc7b6;--soft:#23453f;--err:#f08c8c}}
+:root[data-theme="dark"]{--ink:#e3efea;--bar:#0e2626;--bg:#13201e;--card:#1b2c29;--line:#2f4743;--accent:#7cc7b6;--soft:#23453f;--err:#f08c8c}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "DejaVu Sans",Verdana,"Segoe UI",sans-serif}
+header{background:var(--bar);color:#fff;padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center}
+header b{font-size:1.05rem}
+nav{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+nav a{color:#e6f3ee;text-decoration:none;padding:6px 12px;border-radius:999px;font-size:.9rem}
+nav a[aria-current=page]{background:var(--soft);color:#163a3a;font-weight:700}
+nav a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #f2c14e;outline-offset:2px}
+main{max-width:900px;margin:0 auto;padding:24px 20px 48px}
+h1{font-size:2.2rem;line-height:1.15;margin:0 0 6px}
+h2{font-size:1.2rem;margin:28px 0 10px}
+.lead{margin:0 0 20px;opacity:.85}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.9rem}
+.num{text-align:right;white-space:nowrap}
+form{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+label{display:grid;gap:4px;font-weight:700;font-size:.9rem}
+input,select{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);min-height:44px}
+button{font:inherit;font-weight:700;border:0;border-radius:8px;padding:9px 16px;min-height:44px;background:var(--accent);color:#fff;cursor:pointer}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button{color:#0e2626}}
+button.alt{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+button.sm{min-height:36px;padding:4px 12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.span{grid-column:1/-1}
+.err{color:var(--err);font-weight:700;margin:6px 0}
+.ok{color:var(--accent);font-weight:700;margin:6px 0}
+.total{background:var(--soft);border-radius:14px;padding:18px;display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.total span:last-child{font-size:1.8rem}
+.menu{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.tag{display:inline-block;background:var(--soft);border-radius:999px;padding:1px 10px;font-size:.8rem}
+.qty{width:72px}
+footer{max-width:900px;margin:0 auto;padding:0 20px 32px;font-size:.85rem;opacity:.75}
+</style>
+</head>
+<body>
+<header><b>ICTWEB514 Dynamic web pages</b>
+<nav aria-label="Main"><a href="#contacts" data-r="contacts">Address book</a><a href="#cafe" data-r="cafe">Café menu</a><a href="#checkout" data-r="checkout">Checkout</a><a href="#timetable" data-r="timetable">Timetable</a></nav></header>
+<main id="app"></main>
+<footer>Fictional sample data. Data is saved in this browser only.</footer>
+<script>
+const KEY='ict514v1';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'$'+Number(n).toFixed(2);
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday'];
+function seed(){return{
+ contacts:[["Mia Johnson","12 Cooks Ave, Wolli Creek NSW 2205","mia.j@example.com","0412 000 101"],["Liam Nguyen","8 Bay St, Rockdale NSW 2216","liam.n@example.com","0412 000 102"],["Ava Patel","44 Kent Rd, Mascot NSW 2020","ava.p@example.com","0412 000 103"],["Noah Smith","5 Hill St, Arncliffe NSW 2205","noah.s@example.com","0412 000 104"],["Isla Brown","90 Princes Hwy, Kogarah NSW 2217","isla.b@example.com","0412 000 105"],["Ethan Lee","3 Park Ln, Banksia NSW 2216","ethan.l@example.com","0412 000 106"],["Zoe Taylor","71 Forest Rd, Hurstville NSW 2220","zoe.t@example.com","0412 000 107"],["Jack Wilson","16 Station St, Sydenham NSW 2044","jack.w@example.com","0412 000 108"],["Ruby Chen","29 George St, Sydney NSW 2000","ruby.c@example.com","0412 000 109"],["Leo Martin","2 Beach Rd, Bondi NSW 2026","leo.m@example.com","0412 000 110"]].map((c,i)=>({id:i+1,name:c[0],address:c[1],email:c[2],phone:c[3]})),
+ menu:[[1,"Avocado toast","Breakfast","Sourdough, smashed avocado, lemon",14.5],[2,"Banana bread","Bakery","Toasted, with butter",6.5],[3,"Flat white","Drink","Double shot, steamed milk",4.8],[4,"Chicken wrap","Lunch","Grilled chicken, slaw, aioli",12],[5,"Berry smoothie","Drink","Mixed berries, yoghurt, honey",7.5]].map(m=>({id:m[0],name:m[1],type:m[2],desc:m[3],price:m[4]})),
+ users:[{id:"admin",name:"Admin",pass:"admin123",role:"admin"},{id:"sam",name:"Sam Rivera",pass:"teach123",role:"teacher"},{id:"alex",name:"Alex Chen",pass:"student123",role:"student"}],
+ courses:[{id:1,name:"Web Development"},{id:2,name:"Databases"},{id:3,name:"Networking"}],
+ entries:[{id:1,course:1,teacher:"sam",day:"Monday",start:"09:00",end:"11:00"},{id:2,course:2,teacher:"sam",day:"Wednesday",start:"13:00",end:"15:00"},{id:3,course:3,teacher:"sam",day:"Friday",start:"10:00",end:"12:00"}],
+ enrol:[{student:"alex",course:1},{student:"alex",course:2}]};}
+let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+if(!S||!S.contacts)S=seed();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let me=null,cart={},editC=null,editM=null,editE=null,msg='',day='All';
+try{me=JSON.parse(sessionStorage.getItem('me'))}catch(e){}
+const nextId=a=>a.reduce((m,x)=>Math.max(m,x.id),0)+1;
+const cname=id=>(S.courses.find(c=>c.id==id)||{}).name||'?';
+const tname=id=>(S.users.find(u=>u.id==id)||{}).name||id;
+
+/* ---------- Address book ---------- */
+function contacts(){
+ const c=S.contacts.find(x=>x.id==editC)||{name:'',address:'',email:'',phone:''};
+ return `<h1>Personal address book</h1><p class="lead">Add, edit and view contacts.</p>
+ <div class="card"><h2 style="margin-top:0">${editC?'Edit contact':'Add contact'}</h2>
+ <form id="cf" novalidate><label>Name<input name="name" value="${esc(c.name)}" required></label>
+ <label>Address<input name="address" value="${esc(c.address)}" required></label>
+ <label>Email address<input name="email" type="email" value="${esc(c.email)}" required></label>
+ <label>Phone number<input name="phone" value="${esc(c.phone)}" required></label>
+ <div class="span row"><button>${editC?'Save changes':'Add contact'}</button>${editC?'<button type="button" class="alt" id="cc">Cancel</button>':''}</div>
+ <div class="span err" role="alert" id="ce">${esc(msg)}</div></form></div>
+ <div class="card wrap"><table><thead><tr><th>Name</th><th>Address</th><th>Email</th><th>Phone</th><th></th></tr></thead><tbody>
+ ${S.contacts.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.address)}</td><td>${esc(x.email)}</td><td>${esc(x.phone)}</td><td class="row"><button class="sm alt" data-ec="${x.id}">Edit</button><button class="sm alt" data-dc="${x.id}">Delete</button></td></tr>`).join('')}</tbody></table></div>`;}
+function contactsBind(){
+ $('#cf').onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));
+  for(const k in f)f[k]=f[k].trim();
+  if(!f.name||!f.address||!f.email||!f.phone){msg='Fill in every field.';return go()}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)){msg='Enter a valid email address.';return go()}
+  if(!/^[0-9+() ]{6,20}$/.test(f.phone)){msg='Phone can only use digits, spaces, + and brackets.';return go()}
+  if(editC){Object.assign(S.contacts.find(x=>x.id==editC),f)}else S.contacts.push({id:nextId(S.contacts),...f});
+  editC=null;msg='';save();go();};
+ document.querySelectorAll('[data-ec]').forEach(b=>b.onclick=()=>{editC=+b.dataset.ec;msg='';go();scrollTo(0,0)});
+ document.querySelectorAll('[data-dc]').forEach(b=>b.onclick=()=>{S.contacts=S.contacts.filter(x=>x.id!=b.dataset.dc);save();go()});
+ const cc=$('#cc');if(cc)cc.onclick=()=>{editC=null;msg='';go()};}
+
+/* ---------- Café ---------- */
+function cafe(){
+ const m=S.menu.find(x=>x.id==editM)||{name:'',type:'',desc:'',price:''};
+ return `<h1>Café menu</h1><p class="lead">Choose items, then go to checkout.</p>
+ <div class="menu">${S.menu.map(x=>`<div class="card"><span class="tag">${esc(x.type)}</span><h3 style="margin:8px 0 4px">${esc(x.name)}</h3><p style="margin:0 0 10px">${esc(x.desc)}</p>
+ <div class="row"><b>${money(x.price)}</b><input class="qty" type="number" min="0" max="20" value="${cart[x.id]||0}" data-q="${x.id}" aria-label="Quantity of ${esc(x.name)}"><button class="sm alt" data-e="${x.id}">Staff edit</button></div></div>`).join('')}</div>
+ <div class="row" style="margin:6px 0 24px"><a href="#checkout"><button type="button">Go to checkout</button></a></div>
+ <div class="card"><h2 style="margin-top:0">${editM?'Edit menu item':'Add menu item (staff)'}</h2>
+ <form id="mf" novalidate><label>Name<input name="name" value="${esc(m.name)}" required></label>
+ <label>Type<input name="type" value="${esc(m.type)}" required></label>
+ <label>Description<input name="desc" value="${esc(m.desc)}" required></label>
+ <label>Price (AUD)<input name="price" type="number" step="0.01" min="0" value="${esc(m.price)}" required></label>
+ <div class="span row"><button>${editM?'Save changes':'Add item'}</button>${editM?'<button type="button" class="alt" id="mc">Cancel</button>':''}</div>
+ <div class="span err" role="alert">${esc(msg)}</div></form></div>`;}
+function cafeBind(){
+ document.querySelectorAll('[data-q]').forEach(i=>i.onchange=()=>{const q=Math.max(0,Math.min(20,parseInt(i.value)||0));i.value=q;if(q)cart[i.dataset.q]=q;else delete cart[i.dataset.q]});
+ document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{editM=+b.dataset.e;msg='';go()});
+ $('#mf').onsubmit=e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));
+  for(const k in f)f[k]=f[k].trim();const p=parseFloat(f.price);
+  if(!f.name||!f.type||!f.desc){msg='Fill in name, type and description.';return go()}
+  if(!(p>=0)||f.price===''){msg='Price must be zero or more.';return go()}
+  const rec={name:f.name,type:f.type,desc:f.desc,price:Math.round(p*100)/100};
+  if(editM)Object.assign(S.menu.find(x=>x.id==editM),rec);else S.menu.push({id:nextId(S.menu),...rec});
+  editM=null;msg='';save();go();};
+ const mc=$('#mc');if(mc)mc.onclick=()=>{editM=null;msg='';go()};}
+function checkout(){
+ const lines=Object.entries(cart).map(([id,q])=>({m:S.menu.find(x=>x.id==id),q})).filter(l=>l.m);
+ const total=lines.reduce((s,l)=>s+Math.round(l.m.price*100)*l.q,0)/100;
+ const n=lines.reduce((s,l)=>s+l.q,0);
+ return `<h1>Review your order</h1><p class="lead">${n} item${n==1?'':'s'} · Prices in AUD</p>
+ ${lines.length?`<div class="card wrap"><table><thead><tr><th>Item</th><th class="num">Amount</th></tr></thead><tbody>
+ ${lines.map(l=>`<tr><td><b>${esc(l.m.name)}</b><br><small>${l.q} × ${money(l.m.price)}</small></td><td class="num">${money(l.m.price*l.q)}</td></tr>`).join('')}</tbody></table></div>
+ <div class="total"><span>Order total</span><span>${money(total)}</span></div>
+ <div class="row" style="margin-top:16px"><button id="po">Place order</button><a href="#cafe"><button type="button" class="alt">Change items</button></a></div><div class="ok" role="status">${esc(msg)}</div>`
+ :`<div class="card">Your cart is empty. <a href="#cafe">Choose items from the menu</a>.</div>`}`;}
+function checkoutBind(){const b=$('#po');if(b)b.onclick=()=>{cart={};msg='Order placed. Thank you!';go()}}
+
+/* ---------- Timetable ---------- */
+function dayBar(){return `<div class="row" style="margin-bottom:12px"><label style="display:flex;align-items:center;gap:8px">Day<select id="dy">${['All',...DAYS].map(d=>`<option ${d==day?'selected':''}>${d}</option>`).join('')}</select></label></div>`}
+function tTable(list,admin){
+ list=list.filter(e=>day=='All'||e.day==day).sort((a,b)=>DAYS.indexOf(a.day)-DAYS.indexOf(b.day)||a.start.localeCompare(b.start));
+ if(!list.length)return '<div class="card">No classes to show.</div>';
+ return `<div class="card wrap"><table><thead><tr><th>Day</th><th>Time</th><th>Course</th><th>Teacher</th>${admin?'<th></th>':''}</tr></thead><tbody>${list.map(e=>`<tr><td>${e.day}</td><td>${e.start}–${e.end}</td><td>${esc(cname(e.course))}</td><td>${esc(tname(e.teacher))}</td>${admin?`<td class="row"><button class="sm alt" data-ee="${e.id}">Edit</button><button class="sm alt" data-de="${e.id}">Delete</button></td>`:''}</tr>`).join('')}</tbody></table></div>`;}
+function timetable(){
+ if(!me)return `<h1>School timetable</h1><p class="lead">Sign in, or create a student account.</p>
+ <div class="card"><h2 style="margin-top:0">Sign in</h2><form id="lf"><label>User ID<input name="id" autocomplete="username" required></label><label>Password<input name="pw" type="password" autocomplete="current-password" required></label><div class="span row"><button>Sign in</button></div></form>
+ <p><small>Demo accounts: admin / admin123, sam / teach123, alex / student123</small></p></div>
+ <div class="card"><h2 style="margin-top:0">New student account</h2><form id="sf"><label>Full name<input name="name" required></label><label>User ID<input name="id" required></label><label>Password (6+ characters)<input name="pw" type="password" autocomplete="new-password" required></label><div class="span row"><button>Create account</button></div></form></div>
+ <div class="err" role="alert">${esc(msg)}</div>`;
+ const head=`<div class="row" style="justify-content:space-between"><span>Signed in as <b>${esc(me.name)}</b> (${me.role})</span><button class="sm alt" id="lo">Sign out</button></div>`;
+ if(me.role=='admin'){
+  const e=S.entries.find(x=>x.id==editE)||{course:1,teacher:'',day:'Monday',start:'09:00',end:'10:00'};
+  const teachers=S.users.filter(u=>u.role=='teacher');
+  return `<h1>Manage timetable</h1>${head}${dayBar()}${tTable(S.entries,true)}
+  <div class="card"><h2 style="margin-top:0">${editE?'Edit class':'Add class'}</h2><form id="ef">
+  <label>Course<select name="course">${S.courses.map(c=>`<option value="${c.id}" ${c.id==e.course?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label>
+  <label>Teacher<select name="teacher">${teachers.map(t=>`<option value="${t.id}" ${t.id==e.teacher?'selected':''}>${esc(t.name)}</option>`).join('')}</select></label>
+  <label>Day<select name="day">${DAYS.map(d=>`<option ${d==e.day?'selected':''}>${d}</option>`).join('')}</select></label>
+  <label>Start<input type="time" name="start" value="${e.start}" required></label><label>Finish<input type="time" name="end" value="${e.end}" required></label>
+  <div class="span row"><button>${editE?'Save changes':'Add class'}</button>${editE?'<button type="button" class="alt" id="ecx">Cancel</button>':''}</div></form></div>
+  <div class="card"><h2 style="margin-top:0">Register teacher</h2><form id="tf"><label>Full name<input name="name" required></label><label>User ID<input name="id" required></label><label>Password (6+ characters)<input name="pw" type="password" autocomplete="new-password" required></label><div class="span row"><button>Register teacher</button></div></form></div>
+  <div class="err" role="alert">${esc(msg)}</div>`;}
+ if(me.role=='teacher')return `<h1>My teaching timetable</h1>${head}${dayBar()}${tTable(S.entries.filter(x=>x.teacher==me.id),false)}`;
+ const mine=S.enrol.filter(x=>x.student==me.id).map(x=>x.course);
+ return `<h1>My courses and timetable</h1>${head}
+ <div class="card"><h2 style="margin-top:0">Courses</h2>${S.courses.map(c=>`<div class="row" style="justify-content:space-between;padding:6px 0"><span>${esc(c.name)}</span>${mine.includes(c.id)?`<button class="sm alt" data-rm="${c.id}">Remove</button>`:`<button class="sm" data-add="${c.id}">Add course</button>`}</div>`).join('')}</div>
+ ${dayBar()}${tTable(S.entries.filter(x=>mine.includes(x.course)),false)}`;}
+function timetableBind(){
+ const on=(s,fn)=>{const el=$(s);if(el)el.onsubmit=e=>{e.preventDefault();fn(Object.fromEntries(new FormData(e.target)))}};
+ const setMe=u=>{me={id:u.id,name:u.name,role:u.role};try{sessionStorage.setItem('me',JSON.stringify(me))}catch(e){}};
+ on('#lf',f=>{const u=S.users.find(x=>x.id==f.id.trim()&&x.pass==f.pw);if(!u){msg='Wrong user ID or password.';return go()}msg='';setMe(u);go()});
+ const reg=(f,role,after)=>{f.id=f.id.trim().toLowerCase();f.name=f.name.trim();
+  if(!f.name||!/^[a-z0-9_]{3,20}$/.test(f.id)){msg='Name is required. User ID needs 3–20 letters, numbers or underscores.';return go()}
+  if(f.pw.length<6){msg='Password needs at least 6 characters.';return go()}
+  if(S.users.some(u=>u.id==f.id)){msg='That user ID is taken.';return go()}
+  const u={id:f.id,name:f.name,pass:f.pw,role};S.users.push(u);save();msg='';after(u);go()};
+ on('#sf',f=>reg(f,'student',u=>setMe(u)));
+ on('#tf',f=>reg(f,'teacher',()=>{msg='Teacher registered.'}));
+ on('#ef',f=>{if(f.end<=f.start){msg='Finish time must be after start time.';return go()}
+  const rec={course:+f.course,teacher:f.teacher,day:f.day,start:f.start,end:f.end};
+  if(!rec.teacher){msg='Register a teacher first.';return go()}
+  if(editE)Object.assign(S.entries.find(x=>x.id==editE),rec);else S.entries.push({id:nextId(S.entries),...rec});
+  editE=null;msg='';save();go()});
+ const lo=$('#lo');if(lo)lo.onclick=()=>{me=null;try{sessionStorage.removeItem('me')}catch(e){}go()};
+ const dy=$('#dy');if(dy)dy.onchange=()=>{day=dy.value;go()};
+ document.querySelectorAll('[data-ee]').forEach(b=>b.onclick=()=>{editE=+b.dataset.ee;go()});
+ document.querySelectorAll('[data-de]').forEach(b=>b.onclick=()=>{S.entries=S.entries.filter(x=>x.id!=b.dataset.de);save();go()});
+ const ecx=$('#ecx');if(ecx)ecx.onclick=()=>{editE=null;go()};
+ document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{S.enrol.push({student:me.id,course:+b.dataset.add});save();go()});
+ document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{S.enrol=S.enrol.filter(x=>!(x.student==me.id&&x.course==b.dataset.rm));save();go()});}
+
+const routes={contacts:[contacts,contactsBind],cafe:[cafe,cafeBind],checkout:[checkout,checkoutBind],timetable:[timetable,timetableBind]};
+let last='';
+function go(){
+ let r=location.hash.slice(1);if(!routes[r])r='contacts';
+ if(r!=last){msg='';last=r}
+ $('#app').innerHTML=routes[r][0]();routes[r][1]();
+ document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.dataset.r==r)||a.removeAttribute('aria-current'));
+ document.querySelectorAll('nav a').forEach(a=>{if(a.dataset.r==r)a.setAttribute('aria-current','page')});
+}
+addEventListener('hashchange',go);go();
+</script>
+</body>
+</html>
